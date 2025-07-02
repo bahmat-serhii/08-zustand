@@ -22,13 +22,15 @@ export async function generateMetadata({
 
   const pageDescription = (note.content || "").slice(0, 160);
 
+  const pageUrl = `https://your-domain.com/notes/${id}`;
+
   return {
     title: pageTitle,
     description: pageDescription,
     openGraph: {
       title: pageTitle,
       description: pageDescription,
-      url: `https://notehub-public.goit.study/api`,
+      url: pageUrl,
       images: [
         {
           url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
