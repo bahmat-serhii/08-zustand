@@ -6,6 +6,7 @@ import {
 import { fetchNotes } from "../../../../lib/api";
 import Notes from "./Notes.client";
 import { Tag, type TagWithAll } from "@/types/note";
+import type { Metadata } from "next";
 
 interface NotesPageProps {
   params: Promise<{
@@ -13,7 +14,9 @@ interface NotesPageProps {
   }>;
 }
 
-export async function generateMetadata({ params }: NotesPageProps) {
+export async function generateMetadata({
+  params,
+}: NotesPageProps): Promise<Metadata> {
   const awaitedParams = await params;
   const rawTag = awaitedParams.slug?.[0] ?? "All";
   const validTags: TagWithAll[] = ["All", ...Object.values(Tag)];
