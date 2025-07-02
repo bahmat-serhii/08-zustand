@@ -6,23 +6,31 @@ import css from "./NoteForm.module.css";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createNote } from "../../lib/api";
 import { toast } from "react-hot-toast";
+import { useNoteStore } from "../../lib/store/noteStore";
+import { useRouter } from "next/navigation";
 
 export default function NoteForm() {
   const formRef = useRef<HTMLFormElement>(null);
   const queryClient = useQueryClient();
+  const router = useRouter();
+
+  const { draft, setDraft, clearDraft } = useNoteStore();
 
   const { mutate, status } = useMutation({
     mutationFn: createNote,
     onSuccess: () => {
       toast.success("Note created!");
       queryClient.invalidateQueries({ queryKey: ["notes"] });
+      clearDraft(); // очищаємо чернетку
       formRef.current?.reset();
-      window.location.href = "/notes/filter/all";
+      router.push("/notes/filter/all");
     },
     onError: () => {
       toast.error("Failed to create note");
     },
   });
+
+  // Прив'язка чернетки до полів форми
 
   async function handleSubmit(formData: FormData) {
     const title = formData.get("title")?.toString().trim() || "";
@@ -47,6 +55,15 @@ export default function NoteForm() {
     mutate({ title, content, tag });
   }
 
+  function handleChange(
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) {
+    const { name, value } = e.target;
+    setDraft({ [name]: value });
+  }
+
   return (
     <form ref={formRef} className={css.form} action={handleSubmit}>
       <div className={css.formGroup}>
@@ -58,6 +75,8 @@ export default function NoteForm() {
           required
           minLength={3}
           maxLength={50}
+          onChange={handleChange}
+          defaultValue={draft.title}
         />
       </div>
 
@@ -69,6 +88,8 @@ export default function NoteForm() {
           className={css.textarea}
           rows={8}
           maxLength={500}
+          onChange={handleChange}
+          defaultValue={draft.content}
         />
       </div>
 
@@ -78,8 +99,9 @@ export default function NoteForm() {
           id="tag"
           name="tag"
           className={css.select}
-          defaultValue={Tag.Todo}
           required
+          onChange={handleChange}
+          defaultValue={draft.tag}
         >
           {Object.values(Tag).map((tag) => (
             <option key={tag} value={tag}>
@@ -91,8 +113,9 @@ export default function NoteForm() {
 
       <div className={css.actions}>
         <button
-          type="reset"
+          type="button"
           className={css.cancelButton}
+          onClick={() => router.back()} // Повернення назад без очищення
           disabled={status === "pending"}
         >
           Cancel
