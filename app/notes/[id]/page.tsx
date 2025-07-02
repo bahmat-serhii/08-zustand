@@ -22,7 +22,7 @@ export async function generateMetadata({
 
   const pageDescription = (note.content || "").slice(0, 160);
 
-  const pageUrl = `https://your-domain.com/notes/${id}`;
+  const pageUrl = `https://notehub-public.goit.study/api/notes/${id}`;
 
   return {
     title: pageTitle,
