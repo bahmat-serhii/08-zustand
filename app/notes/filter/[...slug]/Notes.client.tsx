@@ -3,17 +3,16 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
+import Link from "next/link";
 
 import css from "./NotesPage.module.css";
 import SearchBox from "../../../../components/SearchBox/SearchBox";
 import NoteList from "../../../../components/NoteList/NoteList";
-import Modal from "../../../../components/Modal/Modal";
 import Pagination from "../../../../components/Pagination/Pagination";
+import ErrorMessage from "./error";
 
 import { fetchNotes } from "../../../../lib/api";
 import type { Note, TagWithAll } from "../../../../types/note";
-import ErrorMessage from "./error";
-import { NoteForm } from "../../../../components/NoteForm/NoteForm";
 
 interface NotesResponse {
   notes: Note[];
@@ -35,14 +34,11 @@ const Notes: React.FC<NotesProps> = ({
 }) => {
   const [searchInput, setSearchInput] = useState<string>(initialSearch);
   const [page, setPage] = useState<number>(initialPage);
-
-  const [isModalOpen, setModalOpen] = useState<boolean>(false);
-
   const [debouncedSearch] = useDebounce(searchInput, 500);
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, tag]); // скидаємо сторінку також при зміні тегу
+  }, [debouncedSearch, tag]);
 
   const { data, isLoading, isError, error } = useQuery<NotesResponse, Error>({
     queryKey: ["notes", debouncedSearch, page, tag],
@@ -68,9 +64,6 @@ const Notes: React.FC<NotesProps> = ({
     setPage(newPage);
   }, []);
 
-  const openModal = useCallback(() => setModalOpen(true), []);
-  const closeModal = useCallback(() => setModalOpen(false), []);
-
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
@@ -88,9 +81,9 @@ const Notes: React.FC<NotesProps> = ({
           />
         )}
 
-        <button className={css.button} onClick={openModal}>
+        <Link href="/notes/action/create" className={css.button}>
           Create Note +
-        </button>
+        </Link>
       </header>
 
       {isLoading && <p className={css.status}>Loading...</p>}
@@ -100,12 +93,6 @@ const Notes: React.FC<NotesProps> = ({
         <NoteList notes={data.notes} />
       ) : (
         <p className={css.description}>No notes found</p>
-      )}
-
-      {isModalOpen && (
-        <Modal onClose={closeModal}>
-          <NoteForm onClose={closeModal} />
-        </Modal>
       )}
     </div>
   );
